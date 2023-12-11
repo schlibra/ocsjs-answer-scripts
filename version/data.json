@@ -1,0 +1,8 @@
+{
+    "code": 1,
+    "version": "0.1.5",
+    "log": "修复在有正确答案时无法导出题目的问题，并增加更新检测功能。增加职教云首页显示按钮，用于执行设置",
+    "url": {
+        "ScriptCat": "https://scriptcat.org/zh-CN/script-show-page/1413"
+    }
+}
