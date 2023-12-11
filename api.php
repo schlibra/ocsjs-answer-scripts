@@ -24,7 +24,45 @@ switch ($action){
         break;
 }
 function importData(){
-
+    $type = @$_GET["type"] ?? "";
+    if ($type === "single"){
+        $title = @$_POST["title"] ?? "";
+        $answer = @$_POST["answer"] ?? "";
+        if (empty($title) or empty($answer)){
+            echo json_encode(["code"=>0,"msg"=>"字段不能为空"]);
+        }else{
+            if (findRepeat(["title"=>$title,"answer"=>$answer])){
+                echo json_encode(["code"=>0,"msg"=>"题目已存在，跳过导入"]);
+            }else{
+                $data = json_decode(file_get_contents("data.json"),true);
+                $data[] = ["title"=>$title,"answer"=>$answer];
+                file_put_contents("data.json",json_encode($data));
+                echo json_encode(["code"=>1,"msg"=>"导入成功"]);
+            }
+        }
+    }elseif ($type === "multi") {
+        $data = @$_POST["data"];
+        if (empty($data)){
+            echo json_encode(["code"=>0,"msg"=>"字段不能为空"]);
+        }else{
+            $import_data = json_decode($data,true);
+            $data = json_decode(file_get_contents("data.json"),true);
+            $count = 0;
+            for ($i=0;$i<count($import_data);++$i){
+                $item = $import_data[$i];
+                if (!findRepeat($item)){
+                    if (!empty($item["title"] and !empty(["answer"]))){
+                        $count++;
+                        $data[] = $item;
+                    }
+                }
+            }
+            file_put_contents("data.json",json_encode($data));
+            echo json_encode(["code"=>1,"msg"=>"导入完成，传入".count($import_data)."道题，有效导入{$count}道题"]);
+        }
+    }else{
+        echo json_encode(["code"=>0,"msg"=>"上传类型错误"]);
+    }
 }
 
 function updateData(){
@@ -67,9 +105,19 @@ function deleteData(){
     }
 }
 function getData(){
-    readfile("data.json");
+    echo json_encode(["code"=>1,"data"=>json_decode(file_get_contents("data.json"),true)]);
 }
 function initData(){
     file_put_contents("data.json",json_encode([]));
     echo json_encode(["code"=>1,"msg"=>"数据初始化成功"]);
+}
+function findRepeat($item): bool
+{
+    $data = json_decode(file_get_contents("data.json"),true);
+    for($i=0;$i<count($data);++$i){
+        if ($data[$i]["title"]==$item["title"]){
+            return true;
+        }
+    }
+    return false;
 }
