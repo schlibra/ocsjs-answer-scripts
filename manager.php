@@ -20,6 +20,7 @@ $data = json_decode(file_get_contents("data.json"),true);
 <button class="btn btn-primary" onclick="addData()">添加数据</button>
 <button class="btn btn-danger" onclick="initData()">初始化数据</button>
 <button class="btn btn-info">整理数据</button>
+<button class="btn btn-primary">导出数据</button>
 <button class="btn btn-primary" onclick="location.reload()">刷新页面</button>
 <table class="table table-striped table-hover">
     <thead>
