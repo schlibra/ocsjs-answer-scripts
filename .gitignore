@@ -4,3 +4,5 @@
 404.html
 data.json.bak
 index.html
+composer.lock
+vendor/
