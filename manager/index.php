@@ -1,5 +1,5 @@
 <?php
-if (@$_GET["token"]!=@file_get_contents("token") or @file_get_contents("token")==""){
+if (@$_GET["token"]!=@file_get_contents("../token") or @file_get_contents("../token")==""){
     http_response_code(403);
     header("Content-Type: application/json");
     die(json_encode(["code"=>0,"msg"=>"拒绝访问"]));
@@ -13,7 +13,7 @@ if (@$_GET["token"]!=@file_get_contents("token") or @file_get_contents("token")=
 </head>
 <body style="padding: 8px;">
 <?php
-$data = json_decode(file_get_contents("data.json"),true);
+$data = json_decode(file_get_contents("../data.json"),true);
 ?>
 <h1>题库数据管理</h1>
 <h3>当前共<?php echo count($data); ?>条数据</h3>
