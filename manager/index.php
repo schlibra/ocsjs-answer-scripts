@@ -25,9 +25,12 @@ $data = json_decode(file_get_contents("../data.json"),true);
 <table class="table table-striped table-hover">
     <thead>
     <tr>
+        <th class="col"></th>
         <th class="col">#</th>
         <th class="col">问题</th>
         <th class="col">回答</th>
+        <th class="col">作业名称</th>
+        <th class="col">课程名称</th>
         <th class="col">操作</th>
     </tr>
     </thead>
@@ -38,9 +41,12 @@ $data = json_decode(file_get_contents("../data.json"),true);
         $item["id"] = $i;
     ?>
     <tr>
-        <td scope="row"><?php echo $i ?></td>
+        <td scope="row"></td>
+        <td><?php echo $i ?></td>
         <td><?php echo $item["title"] ?></td>
         <td><?php echo $item["answer"] ?></td>
+        <td></td>
+        <td></td>
         <td>
             <button class="btn btn-primary" onclick='editData(`<?php echo json_encode($item); ?>`)'>编辑</button>
             <button class="btn btn-danger" onclick='deleteData(`<?php echo json_encode($item); ?>`)'>删除</button>
