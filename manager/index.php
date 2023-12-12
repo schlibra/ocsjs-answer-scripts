@@ -1,5 +1,5 @@
 <?php
-//require "../vendor/autoload.php";
+// require "../vendor/autoload.php";
 if (@$_GET["token"]!=@file_get_contents("../token") or @file_get_contents("../token")==""){
     http_response_code(403);
     header("Content-Type: application/json");
@@ -21,7 +21,7 @@ $data = json_decode(file_get_contents("../data.json"),true);
 <button class="btn btn-primary" onclick="addData()">添加数据</button>
 <button class="btn btn-danger" onclick="initData()">初始化数据</button>
 <button class="btn btn-info">整理数据</button>
-<button class="btn btn-primary">导出数据</button>
+<button class="btn btn-primary" onclick="exportData()">导出数据</button>
 <button class="btn btn-primary" onclick="location.reload()">刷新页面</button>
 <table class="table table-striped table-hover">
     <thead>
@@ -32,6 +32,8 @@ $data = json_decode(file_get_contents("../data.json"),true);
         <th class="col">回答</th>
         <th class="col">作业名称</th>
         <th class="col">课程名称</th>
+        <th class="col">创建时间</th>
+        <th class="col">更新时间</th>
         <th class="col">操作</th>
     </tr>
     </thead>
@@ -48,6 +50,8 @@ $data = json_decode(file_get_contents("../data.json"),true);
         <td><?php echo $item["answer"] ?></td>
         <td><?php echo @$item["work"] ?></td>
         <td><?php echo @$item["course"] ?></td>
+        <td><?php echo @$item["create"] ?></td>
+        <td><?php echo @$item["update"] ?></td>
         <td>
             <button class="btn btn-primary" onclick='editData(`<?php echo json_encode($item); ?>`)'>编辑</button>
             <button class="btn btn-danger" onclick='deleteData(`<?php echo json_encode($item); ?>`)'>删除</button>
@@ -111,6 +115,8 @@ $data = json_decode(file_get_contents("../data.json"),true);
             if (value==="confirm"){
                 data.title = $("#data_title").val();
                 data.answer = $("#data_answer").val();
+                data.course - $("#data_course").val();
+                data.work = $("#data_work").val();
                 $.post("../api/?action=update&token=<?php @readfile("../token"); ?>",data,res=>{
                     if (res.code){
                         swal({
@@ -420,49 +426,93 @@ $data = json_decode(file_get_contents("../data.json"),true);
             }
         })
     }
+    function exportData(){
+        swal({
+            title: "导出数据",
+            text: "导出全部数据，选择一种格式",
+            closeOnEsc: false,
+            closeOnClickOutside: false,
+            buttons: {
+                json: {
+                    text: "JSON格式",
+                    value: "json"
+                },
+                excel: {
+                    text: "Excel格式",
+                    value: "excel"
+                },
+                cancel: {
+                    text: "取消",
+                    value: "cancel",
+                    visible: true
+                }
+            }
+        }).then(value=>{
+            switch (value){
+                case "json":
+                    exportJson();
+                    break;
+                case "excel":
+                    window.open("../api/?token=<?php @readfile("../token") ?>&action=excel","_blank");
+                    break;
+            }
+        })
+    }
+    function exportJson(){
+        $.get("../api/?token=<?php @readfile("../token") ?>&action=get",res=>{
+            if (res.code){
+                let content = document.createElement("div");
+                content.style.textAlign="left"
+                content.innerHTML = `
+            <textarea rows="10" cols="50" id="export_json_textarea" readonly>${JSON.stringify(res.data)}</textarea>
+        `;
+                swal({
+                    title: "导出JSON",
+                    text: "这是你需要的JSON数据，你可以选择复制或下载",
+                    closeOnEsc: false,
+                    closeOnClickOutside: false,
+                    content,
+                    buttons: {
+                        copy: {
+                            text: "复制",
+                            value: "copy",
+                            closeModal: false
+                        },
+                        download: {
+                            text: "下载",
+                            value: "download"
+                        },
+                        cancel: {
+                            text: "取消",
+                            value: "cancel",
+                            visible: true
+                        }
+                    }
+                }).then(value=>{
+                    switch (value){
+                        case "copy":
+                            $("#export_json_textarea")[0].select();
+                            document.execCommand("copy");
+                            swal.stopLoading();
+                            break;
+                        case "download":
+                            window.open("../api/?token=<?php @readfile("../token"); ?>&action=json","_blank");
+                            break;
+                    }
+                })
+            }else {
+                swal({
+                    title: "获取失败",
+                    text: "无法从服务器获取数据",
+                    closeOnEsc: false,
+                    closeOnClickOutside: false,
+                    buttons: ["确定", "取消"]
+                })
+            }
+        })
+
+
+    }
 </script>
 </body>
 </html>
-<?php
-/*
-<?php
-require "vendor/autoload.php";
-$obj = new PHPExcel();
-try {
-//    $obj->createSheet("Sheet 1");
-    $obj->setActiveSheetIndex(0);
-    $obj->getActiveSheet()
-        ->setCellValue("A1", "#")
-        ->setCellValue("B1", "标题")
-        ->setCellValue("C1", "答案")
-        ->setCellValue("D1", "作业名称")
-        ->setCellValue("E1", "课程名称");
-    $obj->getActiveSheet()->getColumnDimension("B")->setWidth(60);
-    $obj->getActiveSheet()->getColumnDimension("C")->setWidth(40);
-    $obj->getActiveSheet()->getColumnDimension("D")->setWidth(30);
-    $obj->getActiveSheet()->getColumnDimension("E")->setWidth(30);
-    $data = json_decode(file_get_contents("data.json"),true);
-    for ($i=0;$i<count($data);++$i){
-        $item = $data[$i];
-        $c = $i + 2;
-        $obj->getActiveSheet()
-            ->setCellValue("A$c", $i+1)
-            ->setCellValue("B$c", $item["title"])
-            ->setCellValue("C$c", $item["answer"])
-            ->setCellValue("D$c", $item["work"] ?? "")
-            ->setCellValue("E$c", $item["course"] ?? "");
-        $obj->getActiveSheet()->getCell("A$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
-        $obj->getActiveSheet()->getCell("B$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
-        $obj->getActiveSheet()->getCell("C$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
-        $obj->getActiveSheet()->getCell("D$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
-        $obj->getActiveSheet()->getCell("E$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
-    }
-    $obj->getActiveSheet()->setAutoFilter("A1:E".(count($data)+2));
-    $writer = PHPExcel_IOFactory::createWriter($obj, "Excel5");
-    @$writer->save("test.xls");
-} catch (PHPExcel_Exception $e) {
-    echo $e->getMessage();
-}
-
-
-*/
