@@ -1,4 +1,5 @@
 <?php
+//require "../vendor/autoload.php";
 if (@$_GET["token"]!=@file_get_contents("../token") or @file_get_contents("../token")==""){
     http_response_code(403);
     header("Content-Type: application/json");
@@ -45,8 +46,8 @@ $data = json_decode(file_get_contents("../data.json"),true);
         <td><?php echo $i ?></td>
         <td><?php echo $item["title"] ?></td>
         <td><?php echo $item["answer"] ?></td>
-        <td></td>
-        <td></td>
+        <td><?php echo @$item["work"] ?></td>
+        <td><?php echo @$item["course"] ?></td>
         <td>
             <button class="btn btn-primary" onclick='editData(`<?php echo json_encode($item); ?>`)'>编辑</button>
             <button class="btn btn-danger" onclick='deleteData(`<?php echo json_encode($item); ?>`)'>删除</button>
@@ -66,6 +67,7 @@ $data = json_decode(file_get_contents("../data.json"),true);
         data = JSON.parse(data);
         console.log(data);
         let content = document.createElement("div");
+        content.style.textAlign="left";
         content.innerHTML = `
             <div class="mb-3" style="text-align: left;">
                 <label for="data_id" class="form-label">ID：</label>
@@ -78,6 +80,14 @@ $data = json_decode(file_get_contents("../data.json"),true);
             <div class="mb-3" style="text-align: left;">
                 <label for="data_answer" class="form-label">回答：</label>
                 <textarea class="form-control" id="data_answer" cols="30" rows="3" placeholder="回答">${data.answer}</textarea>
+            </div>
+            <div class="mb-3" style="text-align: left;">
+                <label for="data_course" class="form-label">课程名称：</label>
+                <textarea class="form-control" id="data_course" cols="30" rows="3" placeholder="课程名称">${data.course}</textarea>
+            </div>
+            <div class="mb-3" style="text-align: left;">
+                <label for="data_work" class="form-label">作业名称：</label>
+                <textarea class="form-control" id="data_work" cols="30" rows="3" placeholder="作业名称">${data.work}</textarea>
             </div>
         `;
         swal({
@@ -101,7 +111,7 @@ $data = json_decode(file_get_contents("../data.json"),true);
             if (value==="confirm"){
                 data.title = $("#data_title").val();
                 data.answer = $("#data_answer").val();
-                $.post("api.php?action=update&token=<?php @readfile("token"); ?>",data,res=>{
+                $.post("../api/?action=update&token=<?php @readfile("../token"); ?>",data,res=>{
                     if (res.code){
                         swal({
                             title: "操作成功",
@@ -152,7 +162,7 @@ $data = json_decode(file_get_contents("../data.json"),true);
             }
         }).then(value=>{
             if (value==="confirm"){
-                $.post("api.php?action=delete&token=<?php @readfile("token"); ?>",data,res=>{
+                $.post("../api/?action=delete&token=<?php @readfile("../token"); ?>",data,res=>{
                     if (res.code){
                         swal({
                             title: "操作成功",
@@ -204,7 +214,7 @@ $data = json_decode(file_get_contents("../data.json"),true);
             }
         }).then(value => {
             if(value==="confirm"){
-                $.post("api.php?action=init&token=<?php @readfile("token"); ?>",[],res=>{
+                $.post("../api/?action=init&token=<?php @readfile("../token"); ?>",[],res=>{
                     if (res.code){
                         swal({
                             title:"操作成功",
@@ -256,9 +266,17 @@ $data = json_decode(file_get_contents("../data.json"),true);
                 <label for="import_single_answer">答案</label>
                 <textarea class="form-control" id="import_single_answer" cols="30" rows="5" placeholder="答案（多选题答案使用#分隔）"></textarea>
             </div>
+            <div class="mb-3 import_single_control">
+                <label for="import_single_course">课程名称</label>
+                <textarea class="form-control" id="import_single_course" cols="30" rows="2" placeholder="课程名称"></textarea>
+            </div>
+            <div class="mb-3 import_single_control">
+                <label for="import_single_work">作业名称</label>
+                <textarea class="form-control" id="import_single_work" cols="30" rows="2" placeholder="课程名称"></textarea>
+            </div>
             <div class="mb-3 import_multi_control" style="display: none">
                 <label for="import_multi_data">题库数据</label>
-                <textarea class="form-control" id="import_multi_data" cols="30" rows="10" placeholder="题库数据（JSON格式）"></textarea>
+                <textarea class="form-control" id="import_multi_data" cols="30" rows="20" placeholder="题库数据（JSON格式）"></textarea>
             </div>
         `;
         let opt1 = content.children[0];
@@ -301,8 +319,10 @@ $data = json_decode(file_get_contents("../data.json"),true);
                     if (type === "single"){
                         let title = $("#import_single_title").val();
                         let answer = $("#import_single_answer").val();
+                        let course = $("#import_single_course").val();
+                        let work = $("#import_single_work").val();
                         if (title && answer) {
-                            $.post("api.php?action=import&type=single&token=<?php @readfile("token"); ?>", {title,answer}, res => {
+                            $.post("../api/?action=import&type=single&token=<?php @readfile("../token"); ?>", {title,answer,course,work}, res => {
                                 if (res.code){
                                     swal({
                                         title: "操作成功",
@@ -346,7 +366,7 @@ $data = json_decode(file_get_contents("../data.json"),true);
                     if (type === "multi"){
                         let data = $("#import_multi_data").val();
                         if (data) {
-                            $.post("api.php?action=import&type=multi&token=<?php @readfile("token"); ?>", {data}, res => {
+                            $.post("../api/?action=import&type=multi&token=<?php @readfile("../token"); ?>", {data}, res => {
                                 if (res.code){
                                     swal({
                                         title: "操作成功",
@@ -403,3 +423,46 @@ $data = json_decode(file_get_contents("../data.json"),true);
 </script>
 </body>
 </html>
+<?php
+/*
+<?php
+require "vendor/autoload.php";
+$obj = new PHPExcel();
+try {
+//    $obj->createSheet("Sheet 1");
+    $obj->setActiveSheetIndex(0);
+    $obj->getActiveSheet()
+        ->setCellValue("A1", "#")
+        ->setCellValue("B1", "标题")
+        ->setCellValue("C1", "答案")
+        ->setCellValue("D1", "作业名称")
+        ->setCellValue("E1", "课程名称");
+    $obj->getActiveSheet()->getColumnDimension("B")->setWidth(60);
+    $obj->getActiveSheet()->getColumnDimension("C")->setWidth(40);
+    $obj->getActiveSheet()->getColumnDimension("D")->setWidth(30);
+    $obj->getActiveSheet()->getColumnDimension("E")->setWidth(30);
+    $data = json_decode(file_get_contents("data.json"),true);
+    for ($i=0;$i<count($data);++$i){
+        $item = $data[$i];
+        $c = $i + 2;
+        $obj->getActiveSheet()
+            ->setCellValue("A$c", $i+1)
+            ->setCellValue("B$c", $item["title"])
+            ->setCellValue("C$c", $item["answer"])
+            ->setCellValue("D$c", $item["work"] ?? "")
+            ->setCellValue("E$c", $item["course"] ?? "");
+        $obj->getActiveSheet()->getCell("A$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
+        $obj->getActiveSheet()->getCell("B$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
+        $obj->getActiveSheet()->getCell("C$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
+        $obj->getActiveSheet()->getCell("D$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
+        $obj->getActiveSheet()->getCell("E$c")->getStyle()->getAlignment()->setWrapText(true)->setVertical("top");
+    }
+    $obj->getActiveSheet()->setAutoFilter("A1:E".(count($data)+2));
+    $writer = PHPExcel_IOFactory::createWriter($obj, "Excel5");
+    @$writer->save("test.xls");
+} catch (PHPExcel_Exception $e) {
+    echo $e->getMessage();
+}
+
+
+*/
