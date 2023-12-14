@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "data"
 (
-    "id"     INT PRIMARY KEY,
+    "id"     INTEGER PRIMARY KEY AUTOINCREMENT,
     "title"  TEXT NOT NULL,
     "answer" TEXT NOT NULL,
     "work"   TEXT NOT NULL,
