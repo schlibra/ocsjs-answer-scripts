@@ -46,11 +46,11 @@ while($row= $result->fetchArray(SQLITE3_ASSOC)){
     <?php
     for($i=0;$i<count($data);++$i){
         $item = $data[$i];
-        $item["id"] = $i;
+//        $item["id"] = $i;
     ?>
     <tr>
         <td scope="row"></td>
-        <td><?php echo $i ?></td>
+        <td><?php echo $item["id"] ?></td>
         <td><?php echo $item["title"] ?></td>
         <td><?php echo $item["answer"] ?></td>
         <td><?php echo @$item["work"] ?></td>

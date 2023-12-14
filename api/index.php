@@ -134,6 +134,7 @@ function importData(){
 }
 
 function updateData(){
+    global $db;
     $id = @$_POST["id"] ?? "";
     $title = @$_POST["title"] ?? "";
     $answer = @$_POST["answer"] ?? "";
@@ -142,24 +143,40 @@ function updateData(){
     if ($id === "" || empty($title) || empty($answer)){
         die(json_encode(["code"=>0,"msg"=>"字段不能为空"]));
     }
-    $data = json_decode(file_get_contents("../data.json"),true);
-    $data[$id]["title"] = $title;
-    $data[$id]["answer"] = $answer;
-    $data[$id]["course"] = $course;
-    $data[$id]["work"] = $work;
-    $data[$id]["update"] = date("Y-m-d H:i:s");
-    file_put_contents("../data.json", json_encode($data));
-    echo json_encode(["code"=>1,"msg"=>"数据更新成功"]);
+//    $data = json_decode(file_get_contents("../data.json"),true);
+//    $data[$id]["title"] = $title;
+//    $data[$id]["answer"] = $answer;
+//    $data[$id]["course"] = $course;
+//    $data[$id]["work"] = $work;
+//    $data[$id]["update"] = date("Y-m-d H:i:s");
+//    file_put_contents("../data.json", json_encode($data));
+    $update = date("Y-m-d H:i:s");
+    $sql = "UPDATE data SET `title`='$title', `answer`='$answer', `course`='$course', `work`='$work', `update`='$update' WHERE `id`=$id";
+    $result = $db->exec($sql);
+    if($result) {
+        echo json_encode(["code" => 1, "msg" => "数据更新成功"]);
+    }else{
+        echo json_encode(["code"=>0,"msg"=>"数据更新失败：".$db->lastErrorMsg()]);
+    }
 }
 
 function deleteData(){
+    global $db;
     $id = @$_POST["id"] ?? "";
     $title = @$_POST["title"] ?? "";
     $answer = @$_POST["answer"] ?? "";
+    $work = @$_POST["work"];
+    $course = @$_POST["course"];
+    $create = @$_POST["create"];
+    $update = @$_POST["update"];
 
     if ($id === "" || empty($title) || empty($answer)){
         die(json_encode(["code"=>0,"msg"=>"字段不能为空"]));
     }
+    $sql = "DELETE FROM data WHERE `id`=$id AND `title`='$title' AND `answer`='$answer' AND `work`='$work' AND `course`='$course' AND `create`='$create' AND `update`='$update'";
+//    var_dump($sql);
+    $result = $db->exec($sql);
+    echo json_encode(["code"=>1,"msg"=>"数据删除成功"]);
 
 //    $data = json_decode(file_get_contents("../data.json"),true);
 //    $count = count($data);
@@ -213,20 +230,34 @@ function findRepeat($item): bool
     return false;*/
     $db = new SQLite3("../data.db");
     $result = $db->query("select * from 'data' where title='{$item["title"]}'");
-    return !$result->finalize();
+    return (bool)$result->fetchArray(SQLITE3_ASSOC);
 }
 function downloadJson(){
-    $title = "data.json";
-    $file = fopen("../$title", "rb");
-    header("Content-Type: application/octet-stream");
-    Header( "Accept-Ranges:  bytes ");
-    Header( "Content-Disposition:  attachment;  filename= $title");
-    $content = "";
-    while (!feof($file)){
-        $content.=fread($file, 8192);
+    $data = [];
+    global $db;
+    $result = $db->query("select * from data");
+    if ($result) {
+        $title = "data.json";
+        while($row = $result->fetchArray(SQLITE3_ASSOC)){
+            $data[] = $row;
+//            print_r($row);
+        }
+//        die();
+//        file_put_contents($title, json_encode($data));
+//        $file = fopen($title, "rb");
+        header("Content-Type: application/octet-stream");
+        Header("Accept-Ranges:  bytes ");
+        Header("Content-Disposition:  attachment;  filename= $title");
+        $content = "";
+//        while (!feof($file)) {
+//            $content .= fread($file, 8192);
+//        }
+        echo json_encode($data);
+//        fclose($file);
+    }else{
+        header("Content-Type: application/json");
+        echo json_encode(["code"=>0,"msg"=>"数据查询失败：".$db->lastErrorMsg()]);
     }
-    echo $content;
-    fclose($file);
 }
 function downloadExcel(){
     require "../vendor/autoload.php";
