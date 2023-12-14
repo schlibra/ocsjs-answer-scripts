@@ -25,7 +25,7 @@ while($row= $result->fetchArray(SQLITE3_ASSOC)){
 <h3>当前共<?php echo count($data); ?>条数据</h3>
 <button class="btn btn-primary" onclick="addData()">添加数据</button>
 <button class="btn btn-danger" onclick="initData()">初始化数据</button>
-<button class="btn btn-info">整理数据</button>
+<!--<button class="btn btn-info">整理数据</button>-->
 <button class="btn btn-primary" onclick="exportData()">导出数据</button>
 <button class="btn btn-primary" onclick="location.reload()">刷新页面</button>
 <table class="table table-striped table-hover">
