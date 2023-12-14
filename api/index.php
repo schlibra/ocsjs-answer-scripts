@@ -5,7 +5,9 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 $action = @$_REQUEST["action"] ?? "";
 $token = @$_REQUEST["token"] ?? "";
+$db = new SQLite3("../data.db");
 if($token != file_get_contents("../token")){
+    header("Content-Type: application/json");
     die(json_encode(["code"=>0,"msg"=>"你没有权限访问该页面"]));
 }
 switch ($action){
@@ -35,10 +37,30 @@ switch ($action){
     case "excel":
         downloadExcel();
         break;
+    case "sqlite":
+//        header("Content-Type: application/json");
+        sqliteTest();
+        break;
     default:
+        header("Content-Type: application/json");
         echo json_encode(["code"=>0,"msg"=>"没有指定操作"]);
+        break;
+}
+function sqliteTest(){
+    $conn = new SQLite3("data.db");
+    $sql = <<<EOF
+select * from main.data
+EOF;
+    $result = $conn->query($sql);
+    var_dump($result->numColumns());
+    while ($row = $result->fetchArray(SQLITE3_ASSOC)){
+        var_dump($row);
+    }
+//    var_dump($result->fetchArray(SQLITE3_ASSOC));
+
 }
 function importData(){
+    global $db;
     $type = @$_GET["type"] ?? "";
     if ($type === "single"){
         $title = @$_POST["title"] ?? "";
@@ -51,10 +73,17 @@ function importData(){
             if (findRepeat(["title"=>$title,"answer"=>$answer])){
                 echo json_encode(["code"=>0,"msg"=>"题目已存在，跳过导入"]);
             }else{
-                $data = json_decode(file_get_contents("../data.json"),true);
-                $data[] = ["title"=>$title,"answer"=>$answer, "work"=>$work, "course"=>$course, "create"=>date("Y-m-d H:i:s"), "update"=>date("Y-m-d H:i:s")];
-                file_put_contents("../data.json",json_encode($data));
-                echo json_encode(["code"=>1,"msg"=>"导入成功"]);
+//                $data = json_decode(file_get_contents("../data.json"),true);
+//                $data[] = ["title"=>$title,"answer"=>$answer, "work"=>$work, "course"=>$course, "create"=>date("Y-m-d H:i:s"), "update"=>date("Y-m-d H:i:s")];
+//                file_put_contents("../data.json",json_encode($data));
+                $create = date("Y-m-d H:i:s");
+                $update = date("Y-m-d H:i:s");
+                $result = $db->query("INSERT INTO 'data' ('title','answer', 'work', 'course', 'create', 'update') VALUES ('$title', '$answer', '$work', '$course', '$create', '$update')");
+                if ($result) {
+                    echo json_encode(["code" => 1, "msg" => "导入成功"]);
+                }else{
+                    echo json_encode(["code" => 0 ,"msg" => "数据插入失败"]);
+                }
             }
         }
     }elseif ($type === "multi") {
@@ -63,7 +92,8 @@ function importData(){
             echo json_encode(["code"=>0,"msg"=>"字段不能为空"]);
         }else{
             $import_data = json_decode($data,true);
-            $data = json_decode(file_get_contents("../data.json"),true);
+            $count = 0;
+            /*$data = json_decode(file_get_contents("../data.json"),true);
             $count = 0;
             for ($i=0;$i<count($import_data);++$i){
                 $item = $import_data[$i];
@@ -76,8 +106,27 @@ function importData(){
                     }
                 }
             }
-            file_put_contents("../data.json",json_encode($data));
-            echo json_encode(["code"=>1,"msg"=>"导入完成，传入".count($import_data)."道题，有效导入{$count}道题"]);
+            file_put_contents("../data.json",json_encode($data));*/
+            $sql = "INSERT INTO data ('title', 'answer', 'work', 'course', 'create', 'update') VALUES";
+            $list = [];
+            for($i=0;$i<count($import_data);++$i){
+                $item = $import_data[$i];
+                $item["create"] = date("Y-m-d H:i:s");
+                $item["update"] = date("Y-m-d H:i:s");
+                if (!findRepeat($item)){
+                    if (!empty($item["title"] and !empty(["answer"]))){
+                        $count++;
+                        $list[] = "('{$item["title"]}', '{$item["answer"]}', '{$item["work"]}', '{$item["course"]}', '{$item["create"]}', '{$item["update"]}')";
+                    }
+                }
+            }
+            $sql.=join($list, ",");
+            $result = $db->exec($sql);
+            if($result) {
+                echo json_encode(["code" => 1, "msg" => "导入完成，传入" . count($import_data) . "道题，有效导入{$count}道题"]);
+            }else{
+                echo json_encode(["code"=>0,"msg"=>"数据库执行失败：".$db->lastErrorMsg()]);
+            }
         }
     }else{
         echo json_encode(["code"=>0,"msg"=>"上传类型错误"]);
@@ -107,44 +156,64 @@ function deleteData(){
     $id = @$_POST["id"] ?? "";
     $title = @$_POST["title"] ?? "";
     $answer = @$_POST["answer"] ?? "";
+
     if ($id === "" || empty($title) || empty($answer)){
         die(json_encode(["code"=>0,"msg"=>"字段不能为空"]));
     }
-    $data = json_decode(file_get_contents("../data.json"),true);
-    $count = count($data);
-    if ($data[$id]["title"] === $title and $data[$id]["answer"] === $answer){
-        $new_data = [];
-        for ($i=0;$i<$count;++$i){
-            if ($i!=$id){
-                $new_data[] = $data[$i];
-            }
-        }
-        if (count($new_data) === $count){
-            echo json_encode(["code"=>0,"msg"=>"数据更新失败，请重试"]);
-        }else{
-            file_put_contents("../data.json",json_encode($new_data));
-            echo json_encode(["code"=>1,"msg"=>"数据删除成功"]);
-        }
-    }else{
-        echo json_encode(["code"=>0,"msg"=>"数据不同步，请重试"]);
-    }
+
+//    $data = json_decode(file_get_contents("../data.json"),true);
+//    $count = count($data);
+//    if ($data[$id]["title"] === $title and $data[$id]["answer"] === $answer){
+//        $new_data = [];
+//        for ($i=0;$i<$count;++$i){
+//            if ($i!=$id){
+//                $new_data[] = $data[$i];
+//            }
+//        }
+//        if (count($new_data) === $count){
+//            echo json_encode(["code"=>0,"msg"=>"数据更新失败，请重试"]);
+//        }else{
+//            file_put_contents("../data.json",json_encode($new_data));
+//            echo json_encode(["code"=>1,"msg"=>"数据删除成功"]);
+//        }
+//    }else{
+//        echo json_encode(["code"=>0,"msg"=>"数据不同步，请重试"]);
+//    }
 }
 function getData(){
-    echo json_encode(["code"=>1,"data"=>json_decode(file_get_contents("../data.json"),true)]);
+    global $db;
+    $result = $db->query("select * from 'data'");
+    $data = [];
+    if ($result){
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)){
+            $data[] = $row;
+        }
+        echo json_encode(["code"=>1, "data"=>$data]);
+    }else{
+        echo json_encode(["code"=>0, "msg"=>"数据读取失败"]);
+    }
+//    echo json_encode(["code"=>1,"data"=>json_decode(file_get_contents("../data.json"),true)]);
 }
 function initData(){
-    file_put_contents("../data.json",json_encode([]));
+//    file_put_contents("../data.json",json_encode([]));
+    global $db;
+    $db->exec(@file_get_contents("../sql/delete.sql"));
+    $db->exec(@file_get_contents("../sql/create.sql"));
     echo json_encode(["code"=>1,"msg"=>"数据初始化成功"]);
 }
 function findRepeat($item): bool
 {
-    $data = json_decode(file_get_contents("../data.json"),true);
+
+    /*$data = json_decode(file_get_contents("../data.json"),true);
     for($i=0;$i<count($data);++$i){
         if ($data[$i]["title"]==$item["title"]){
             return true;
         }
     }
-    return false;
+    return false;*/
+    $db = new SQLite3("../data.db");
+    $result = $db->query("select * from 'data' where title='{$item["title"]}'");
+    return !$result->finalize();
 }
 function downloadJson(){
     $title = "data.json";

@@ -1,5 +1,7 @@
 {
     "require": {
-        "phpoffice/phpexcel": "^1.8"
+        "phpoffice/phpexcel": "^1.8",
+        "ext-json": "*",
+        "ext-sqlite3": "*"
     }
 }

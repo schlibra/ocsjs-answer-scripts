@@ -14,7 +14,12 @@ if (@$_GET["token"]!=@file_get_contents("../token") or @file_get_contents("../to
 </head>
 <body style="padding: 8px;">
 <?php
-$data = json_decode(file_get_contents("../data.json"),true);
+$data = [];
+$result = (new SQLite3("../data.db"))->query("select * from data");
+while($row= $result->fetchArray(SQLITE3_ASSOC)){
+    $data[] = $row;
+}
+//$data = json_decode(file_get_contents("../data.json"),true);
 ?>
 <h1>题库数据管理</h1>
 <h3>当前共<?php echo count($data); ?>条数据</h3>
