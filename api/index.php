@@ -120,8 +120,10 @@ function importData(){
                     }
                 }
             }
-            $sql.=@join($list, ",");
-            $result = $db->exec($sql);
+            if (count($list)) {
+                $sql .= @join($list, ",");
+                $result = $db->exec($sql);
+            }
             if($result) {
                 echo json_encode(["code" => 1, "msg" => "导入完成，传入" . count($import_data) . "道题，有效导入{$count}道题"]);
             }else{
