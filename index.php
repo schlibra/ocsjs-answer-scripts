@@ -1,6 +1,6 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+// header("Content-Type: application/json");
 $data = json_decode(file_get_contents("data.json"),true);
 $ori_title = @$_GET["title"] ?? "";
 $sp_emp = urldecode("%C2%A0");
