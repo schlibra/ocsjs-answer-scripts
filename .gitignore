@@ -6,3 +6,5 @@ data.json.bak
 index.html
 composer.lock
 vendor/
+data.db
+data.json
