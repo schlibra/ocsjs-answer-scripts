@@ -1,8 +1,11 @@
 {
     "code": 1,
-    "version": "0.1.7",
-    "log": "\n修复在有正确答案时无法导出题目的问题，并增加更新检测功能。\n增加职教云首页显示按钮，用于执行设置。\n导出题目增加课程名称和作业名称的字段\n增加手动检查更新功能，脚本设置->关于脚本->检查更新",
+    "version": "0.1.8",
+    "log": "\n修复在有正确答案时无法导出题目的问题，并增加更新检测功能。\n增加职教云首页显示按钮，用于执行设置。\n导出题目增加课程名称和作业名称的字段\n增加手动检查更新功能，脚本设置->关于脚本->检查更新\n替换复制文本的代码，优化关于脚本中的显示内容",
     "url": {
-        "ScriptCat": "https://scriptcat.org/zh-CN/script-show-page/1413"
+        "ScriptCat": "https://scriptcat.org/zh-CN/script-show-page/1413",
+        "Tampermonkey": "https://greasyfork.org/zh-CN/scripts/482611",
+        "Greasemonkey": "https://greasyfork.org/zh-CN/scripts/482611",
+        "Violentmonkey": "https://greasyfork.org/zh-CN/scripts/482611"
     }
 }
