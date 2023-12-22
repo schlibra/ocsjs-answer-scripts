@@ -8,3 +8,8 @@ composer.lock
 vendor/
 data.db
 data.json
+.idea
+.verysync
+error/
+nginx.htaccess
+favicon.ico
