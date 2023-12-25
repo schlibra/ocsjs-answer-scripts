@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS "data"
     "work"   TEXT NOT NULL,
     "course" TEXT NOT NULL,
     "create" TEXT NOT NULL,
-    "update" TEXT NOT NULL
+    "update" TEXT NOT NULL,
+    "user"   TEXT NOT NULL
 );
