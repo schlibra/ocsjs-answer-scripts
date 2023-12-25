@@ -6,7 +6,7 @@ if (@$_GET["token"]!=@file_get_contents("../token") or @file_get_contents("../to
     die(json_encode(["code"=>0,"msg"=>"拒绝访问"]));
 }
 ?>
-<html lang="zh">
+<html lang="zh" data-bs-theme="dark">
 <head>
     <title>题库数据管理页面</title>
     <meta charset="utf-8">
