@@ -217,8 +217,8 @@ function getData(){
 function initData(){
 //    file_put_contents("../data.json",json_encode([]));
     global $db;
-    $db->exec(@file_get_contents("../sql/delete.sql"));
-    $db->exec(@file_get_contents("../sql/create.sql"));
+    $db->exec(@file_get_contents("../sql/deleteData.sql"));
+    $db->exec(@file_get_contents("../sql/createData.sql"));
     echo json_encode(["code"=>1,"msg"=>"数据初始化成功"]);
 }
 function findRepeat($item): bool
