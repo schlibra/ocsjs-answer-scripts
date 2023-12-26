@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS user
     `gitee`    TEXT    NOT NULL,
     `gitlab`   TEXT    NOT NULL,
     `jihulab`  TEXT    NOT NULL,
-    `admin`    TEXT    NOT NULL
+    `admin`    TEXT    NOT NULL,
+    `ban`      TEXT    NOT NULL
 );
