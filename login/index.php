@@ -25,7 +25,7 @@
             <div class="row mt-3">
                 <div class="col"></div>
                 <div class="col text-center">
-                    <button type="button" class="btn btn-lg btn-primary">登录</button>
+                    <button onclick="login()" type="button" class="btn btn-lg btn-primary">登录</button>
                 </div>
                 <div class="col"></div>
             </div>
@@ -40,8 +40,49 @@
 <script src="https://cdn.tsinbei.com/npm/sweetalert"></script>
 <!--<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>-->
 <script src="https://cdn.tsinbei.com/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script>
-
+<script type="text/javascript">
+    function login() {
+        let username = $("#username").val();
+        let password = $("#password").val();
+        if (username && password) {
+            let content = "";
+            new TextEncoder().encode(window.btoa(`${username}\x00${password}`)).forEach(_ => content += _.toString(16))
+            // console.log(content);
+            $.post("../api/?action=login", {content}, res=>{
+                console.log(res)
+                if(res.code){
+                    swal({
+                        title: "登录成功",
+                        text: res.msg,
+                        icon: "success",
+                        buttons: {
+                            confirm: {
+                                text: "确定"
+                            }
+                        }
+                    })
+                }else {
+                    swal({
+                        title: "登录失败",
+                        text: res.msg ?? "服务端没有正常返回",
+                        icon: "error",
+                        buttons: {
+                            confirm: {
+                                text: "确定"
+                            }
+                        }
+                    })
+                }
+            });
+        } else {
+            swal({
+                title: "登录失败",
+                text: "用户名或密码不能为空",
+                icon: "error",
+                buttons: ["确定", "取消"]
+            })
+        }
+    }
 </script>
 </body>
 </html>
